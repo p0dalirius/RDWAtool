@@ -18,9 +18,9 @@ $ ./RDWArecon.py -h
 
         ____  ____ _       _____                             
        / __ \/ __ \ |     / /   |  ________  _________  ____ 
-      / /_/ / / / / | /| / / /| | / ___/ _ \/ ___/ __ \/ __ \
-     / _, _/ /_/ /| |/ |/ / ___ |/ /  /  __/ /__/ /_/ / / / /
-    /_/ |_/_____/ |__/|__/_/  |_/_/   \___/\___/\____/_/ /_/ 
+      / /_/ / / / / | /| / / /| | / ___/ _ \/ ___/ __ \/ __ \   @podalirius_
+     / _, _/ /_/ /| |/ |/ / ___ |/ /  /  __/ /__/ /_/ / / / /   
+    /_/ |_/_____/ |__/|__/_/  |_/_/   \___/\___/\____/_/ /_/    v1.1
                                                              
     
 usage: RDWArecon.py [-h] -u URL [-v] [-k] [-L] [--no-colors]
@@ -34,6 +34,7 @@ optional arguments:
   -k, --insecure     Allow insecure server connections when using SSL (default: False)
   -L, --location     Follow redirects (default: False)
   --no-colors        Disable colored output (default: False)
+
 ```
 
 ## How it works
@@ -77,6 +78,10 @@ If the remote RDWeb installation was not hardened, there is a high chance that t
 | **Windows Server 2022**    | `256a6445e032875e611457374f08acb0565796c950eb9c254495d559600c0367` | ![](./version_images/Windows%20Server%202022_black.png)           | 
 
 The [RDWArecon.py](./RDWArecon.py) tool automatically gets this file and compare its hash to get the remote Windows Server version.
+
+## Example of output
+
+![](./.github/example.png)
 
 ## Contributing
 
