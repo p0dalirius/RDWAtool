@@ -79,6 +79,10 @@ If the remote RDWeb installation was not hardened, there is a high chance that t
 
 The [RDWArecon.py](./RDWArecon.py) tool automatically gets this file and compare its hash to get the remote Windows Server version.
 
+## Demonstration
+
+https://user-images.githubusercontent.com/79218792/152828736-e2e39305-8167-432e-ac3a-3449ea9ff414.mp4
+
 ## Example of output
 
 ![](./.github/example.png)
@@ -86,6 +90,3 @@ The [RDWArecon.py](./RDWArecon.py) tool automatically gets this file and compare
 ## Contributing
 
 Pull requests are welcome. Feel free to open an issue if you want to add other features.
-
-## References
- - 
