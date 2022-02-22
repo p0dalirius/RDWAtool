@@ -3,7 +3,7 @@
 <p align="center">
   A python script to extract information from a Microsoft Remote Desktop Web Access (RDWA) application
   <br>
-  
+  <img src="https://visitor-badge.glitch.me/badge?page_id=https://github.com/p0dalirius/RDWArecon/README.md"/>
   <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/p0dalirius/RDWArecon">
   <a href="https://twitter.com/intent/follow?screen_name=podalirius_" title="Follow"><img src="https://img.shields.io/twitter/follow/podalirius_?label=Podalirius&style=social"></a>
   <br>
