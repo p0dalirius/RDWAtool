@@ -15,26 +15,27 @@ This python script allow to extract various information from a Microsoft Remote 
 
 ```
 $ ./RDWArecon.py -h
-
         ____  ____ _       _____                             
        / __ \/ __ \ |     / /   |  ________  _________  ____ 
       / /_/ / / / / | /| / / /| | / ___/ _ \/ ___/ __ \/ __ \   @podalirius_
      / _, _/ /_/ /| |/ |/ / ___ |/ /  /  __/ /__/ /_/ / / / /   
-    /_/ |_/_____/ |__/|__/_/  |_/_/   \___/\___/\____/_/ /_/    v1.1
+    /_/ |_/_____/ |__/|__/_/  |_/_/   \___/\___/\____/_/ /_/    v1.2
                                                              
     
-usage: RDWArecon.py [-h] -u URL [-v] [-k] [-L] [--no-colors]
+usage: RDWArecon.py [-h] [-f FILE] -u URL [-v] [-k] [-L] [--no-colors]
 
-Description message
+Extract information about the server and the domain from external RDWeb pages.
 
-optional arguments:
-  -h, --help         show this help message and exit
-  -u URL, --url URL  Target RDWeb url
-  -v, --verbose      Verbose mode. (default: False)
-  -k, --insecure     Allow insecure server connections when using SSL (default: False)
-  -L, --location     Follow redirects (default: False)
-  --no-colors        Disable colored output (default: False)
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         Verbose mode. (default: False)
+  -k, --insecure        Allow insecure server connections when using SSL (default: False)
+  -L, --location        Follow redirects (default: False)
+  --no-colors           Disable colored output (default: False)
 
+Targets:
+  -f FILE, --file FILE  Path to file containing a line by line list of targets.
+  -u URL, --url URL     Target url.
 ```
 
 ## How it works

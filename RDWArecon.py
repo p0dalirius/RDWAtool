@@ -25,7 +25,7 @@ def banner():
 
 
 def parseArgs():
-    parser = argparse.ArgumentParser(description="Description message")
+    parser = argparse.ArgumentParser(description="Extract information about the server and the domain from external RDWeb pages.")
     group_targets_source = parser.add_argument_group("Targets")
     group_targets_source.add_argument("-f", "--file", default=None, type=str, help="Path to file containing a line by line list of targets.")
     group_targets_source.add_argument("-u", "--url", default=[], type=str, action='append', required=True, help="Target url.")
