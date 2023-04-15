@@ -5,6 +5,8 @@
 # Date created       : 5 Feb 2022
 
 import argparse
+import os
+import sys
 import urllib.parse
 import requests
 import urllib3
@@ -17,18 +19,30 @@ def banner():
        / __ \/ __ \ |     / /   |  ________  _________  ____ 
       / /_/ / / / / | /| / / /| | / ___/ _ \/ ___/ __ \/ __ \   @podalirius_
      / _, _/ /_/ /| |/ |/ / ___ |/ /  /  __/ /__/ /_/ / / / /   
-    /_/ |_/_____/ |__/|__/_/  |_/_/   \___/\___/\____/_/ /_/    v1.1
+    /_/ |_/_____/ |__/|__/_/  |_/_/   \___/\___/\____/_/ /_/    v1.2
                                                              
     """)
 
+
 def parseArgs():
     parser = argparse.ArgumentParser(description="Description message")
-    parser.add_argument("-u", "--url", default=None, required=True, help="Target RDWeb url")
+    group_targets_source = parser.add_argument_group("Targets")
+    group_targets_source.add_argument("-f", "--file", default=None, type=str, help="Path to file containing a line by line list of targets.")
+    group_targets_source.add_argument("-u", "--url", default=[], type=str, action='append', required=True, help="Target url.")
+
     parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Verbose mode. (default: False)")
     parser.add_argument("-k", "--insecure", dest="verify", action="store_false", default=True, required=False, help="Allow insecure server connections when using SSL (default: False)")
     parser.add_argument("-L", "--location", dest="redirect", action="store_true", default=False, required=False, help="Follow redirects (default: False)")
     parser.add_argument("--no-colors", dest="nocolors", action="store_true", default=False, required=False, help="Disable colored output (default: False)")
-    return parser.parse_args()
+
+    args = parser.parse_args()
+
+    if (args.targets_file is None) and (len(args.target) == 0):
+        parser.print_help()
+        print("\n[!] No targets specified.")
+        sys.exit(0)
+
+    return args
 
 
 def detect_version(base_url, allow_redirects=False, verify=True, verbose=False, nocolors=False):
@@ -81,13 +95,10 @@ def detect_version(base_url, allow_redirects=False, verify=True, verbose=False, 
     return None
 
 
-if __name__ == '__main__':
-    banner()
-    options = parseArgs()
-
-    if not options.url.startswith("http://") and not options.url.startswith("https://"):
-        options.url = "https://" + options.url
-    options.url = options.url.rstrip('/')
+def scan_target(url, options):
+    if not url.startswith("http://") and not url.startswith("https://"):
+        url = "https://" + url
+    url = url.rstrip('/')
 
     if not options.verify:
         # Disable warings of insecure connection for invalid certificates
@@ -107,6 +118,7 @@ if __name__ == '__main__':
         else:
             print("[+] Remote server is running: \x1b[95m%s\x1b[0m" % remote_version)
 
+    # iterate on possible languages
     langs = ["de-DE", "en-GB", "en-US", "es-ES", "fr-FR", "it-IT", "ja-JP", "mk-MK", "nl-NL", "pt-BR", "ru-RU", "tr-TR"]
     rdweb_data = {"WorkspaceFriendlyName": "", "WorkSpaceID": "", "RDPCertificates": "", "RedirectorName": "", "EventLogUploadAddress": ""}
     for lang in langs:
@@ -154,3 +166,34 @@ if __name__ == '__main__':
                 print("[error] %s" % e)
             else:
                 print("[\x1b[91merror\x1b[0m] \x1b[91m%s\x1b[0m" % e)
+
+
+if __name__ == '__main__':
+    banner()
+    options = parseArgs()
+
+    targets = []
+
+    # Loading targets from a single --target option
+    if len(options.target) != 0:
+        if options.debug:
+            print("[debug] Loading targets from --target options")
+        for target in options.target:
+            targets.append(target)
+
+    # Loading targets line by line from a targets file
+    if options.targets_file is not None:
+        if os.path.exists(options.targets_file):
+            if options.debug:
+                print("[debug] Loading targets line by line from targets file '%s'" % options.targets_file)
+            f = open(options.targets_file, "r")
+            for line in f.readlines():
+                targets.append(line.strip())
+            f.close()
+        else:
+            print("[!] Could not open targets file '%s'" % options.targets_file)
+
+    # Scanning targets
+    for url in targets:
+        scan_target(url, options)
+
