@@ -6,6 +6,7 @@
 
 import argparse
 import os
+import socket
 import sys
 import urllib.parse
 import requests
@@ -14,21 +15,47 @@ from bs4 import BeautifulSoup
 import hashlib
 
 
+VERSION = "1.3"
+
+
 def banner():
     print(r"""        ____  ____ _       _____                             
        / __ \/ __ \ |     / /   |  ________  _________  ____ 
       / /_/ / / / / | /| / / /| | / ___/ _ \/ ___/ __ \/ __ \   @podalirius_
      / _, _/ /_/ /| |/ |/ / ___ |/ /  /  __/ /__/ /_/ / / / /   
-    /_/ |_/_____/ |__/|__/_/  |_/_/   \___/\___/\____/_/ /_/    v1.2
+    /_/ |_/_____/ |__/|__/_/  |_/_/   \___/\___/\____/_/ /_/    v%s
                                                              
-    """)
+    """ % VERSION)
+
+
+def is_port_open(target, port, debug=True) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(10)
+        # Non-existant domains cause a lot of errors, added error handling
+        try:
+            return s.connect_ex((target, port)) == 0
+        except Exception as err:
+            if debug:
+                print("[debug] is_port_open('%s', %d) ==> %s" % (target, port, err))
+            return False
+
+
+def is_http_accessible(target_url, verify=False) -> bool:
+    try:
+        r = requests.get(url=target_url, verify=verify)
+        return True
+    except Exception as e:
+        return False
 
 
 def parseArgs():
     parser = argparse.ArgumentParser(description="Extract information about the server and the domain from external RDWeb pages.")
+
+    parser.add_argument("--debug", default=False, action="store_true", help="Debug mode, for huge verbosity. (default: False)")
+
     group_targets_source = parser.add_argument_group("Targets")
-    group_targets_source.add_argument("-f", "--file", default=None, type=str, help="Path to file containing a line by line list of targets.")
-    group_targets_source.add_argument("-u", "--url", default=[], type=str, action='append', required=True, help="Target url.")
+    group_targets_source.add_argument("-tf", "--targets-file", dest="targets_file", default=None, type=str, help="Path to file containing a line by line list of targets.")
+    group_targets_source.add_argument("-tu", "--target-url", dest="target_urls", default=[], type=str, action='append', help="Target URL to the tomcat manager.")
 
     parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Verbose mode. (default: False)")
     parser.add_argument("-k", "--insecure", dest="verify", action="store_false", default=True, required=False, help="Allow insecure server connections when using SSL (default: False)")
@@ -37,7 +64,7 @@ def parseArgs():
 
     args = parser.parse_args()
 
-    if (args.targets_file is None) and (len(args.target) == 0):
+    if (args.targets_file is None) and (len(args.target_urls) == 0):
         parser.print_help()
         print("\n[!] No targets specified.")
         sys.exit(0)
@@ -81,7 +108,12 @@ def detect_version(base_url, allow_redirects=False, verify=True, verbose=False, 
             if verbose:
                 print("[debug]    [!] Unexpected HTTP response code %d" % r.status_code)
             return None
-    except (urllib3.exceptions.NewConnectionError, urllib3.exceptions.ConnectTimeoutError, urllib3.exceptions.ReadTimeoutError, requests.exceptions.ConnectionError) as e:
+    except (
+        urllib3.exceptions.NewConnectionError,
+        urllib3.exceptions.ConnectTimeoutError,
+        urllib3.exceptions.ReadTimeoutError,
+        requests.exceptions.ConnectionError
+    ) as e:
         if verbose:
             if nocolors:
                 print("[debug]    [error] %s" % e)
@@ -96,12 +128,39 @@ def detect_version(base_url, allow_redirects=False, verify=True, verbose=False, 
 
 
 def scan_target(url, options):
+    # Format target url if not formatted properly
     if not url.startswith("http://") and not url.startswith("https://"):
         url = "https://" + url
     url = url.rstrip('/')
 
+    # Parsing target port
+    port = 80
+    target_data = urllib.parse.urlparse(url)
+    if ":" in target_data.netloc:
+        port = int(target_data.netloc.split(':', 1)[1])
+    elif target_data.scheme == "https":
+        port = 443
+    elif target_data.scheme == "http":
+        port = 80
+
+    # Check if target port is open
+    if not is_port_open(target=target_data.netloc, port=port):
+        if options.nocolors:
+            print("[error] TCP port is closed on %s://%s." % (target_data.scheme, target_data.netloc))
+        else:
+            print("[\x1b[91merror\x1b[0m] \x1b[91mTCP port is closed on %s://%s.\x1b[0m" % (target_data.scheme, target_data.netloc))
+        return None
+    # Check if target HTTP protocol is responding
+    if not is_http_accessible(target_url=url, verify=options.verify):
+        if options.nocolors:
+            print("[error] No HTTP protocol on %s://%s." % (target_data.scheme, target_data.netloc))
+        else:
+            print("[\x1b[91merror\x1b[0m] \x1b[91mNo HTTP protocol on %s://%s.\x1b[0m" % (target_data.scheme, target_data.netloc))
+        return None
+
+    # Disable SSL/TLS verification
     if not options.verify:
-        # Disable warings of insecure connection for invalid certificates
+        # Disable warnings of insecure connection for invalid certificates
         requests.packages.urllib3.disable_warnings()
         # Allow use of deprecated and weak cipher methods
         requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += ':HIGH:!DH:!aNULL'
@@ -111,7 +170,12 @@ def scan_target(url, options):
             pass
 
     # Detecting remote windows server version if possible
-    remote_version = detect_version(options.url, allow_redirects=options.redirect, verify=options.verify, verbose=options.verbose)
+    remote_version = detect_version(
+        base_url=url,
+        allow_redirects=options.redirect,
+        verify=options.verify,
+        verbose=options.verbose
+    )
     if remote_version is not None:
         if options.nocolors:
             print("[+] Remote server is running: %s" % remote_version)
@@ -119,17 +183,31 @@ def scan_target(url, options):
             print("[+] Remote server is running: \x1b[95m%s\x1b[0m" % remote_version)
 
     # iterate on possible languages
-    langs = ["de-DE", "en-GB", "en-US", "es-ES", "fr-FR", "it-IT", "ja-JP", "mk-MK", "nl-NL", "pt-BR", "ru-RU", "tr-TR"]
-    rdweb_data = {"WorkspaceFriendlyName": "", "WorkSpaceID": "", "RDPCertificates": "", "RedirectorName": "", "EventLogUploadAddress": ""}
+    langs = [
+        "de-DE", "en-GB", "en-US", "es-ES", "fr-FR", "it-IT",
+        "ja-JP", "mk-MK", "nl-NL", "pt-BR", "ru-RU", "tr-TR"
+    ]
+    rdweb_data = {
+        "WorkspaceFriendlyName": "",
+        "WorkSpaceID": "",
+        "RDPCertificates": "",
+        "RedirectorName": "",
+        "EventLogUploadAddress": ""
+    }
     for lang in langs:
-        url = "%s/RDWeb/Pages/%s/login.aspx" % (options.url, lang)
+        login_url = "%s/RDWeb/Pages/%s/login.aspx" % (url, lang)
 
         if options.verbose:
-            print("[debug] Trying %s" % url)
+            print("[debug] Trying %s" % login_url)
         try:
-            r = requests.get(url, allow_redirects=options.redirect, verify=options.verify, timeout=10)
+            r = requests.get(
+                url=login_url,
+                allow_redirects=options.redirect,
+                verify=options.verify,
+                timeout=10
+            )
             if r.status_code == 200:
-                print("[>] Found information on %s" % url)
+                print("[>] Found information on %s" % login_url)
 
                 # HTTP headers
                 print("  [>] Parsing interesting HTTP headers if any")
@@ -141,7 +219,7 @@ def scan_target(url, options):
                             print("    | \x1b[94m%s\x1b[0m: \x1b[95m%s\x1b[0m" % (hname, r.headers[hname]))
 
                 # Form data
-                soup = BeautifulSoup(r.content, "lxml")
+                soup = BeautifulSoup(markup=r.content, features="lxml-xml")
                 form = soup.find('form', attrs={"id": "FrmLogin"})
                 if form is not None:
                     print("  [>] Parsing login form data")
@@ -155,13 +233,18 @@ def scan_target(url, options):
                                 if options.nocolors:
                                     print("    | %s: %s" % (_input["name"], rdweb_data[_input["name"]]))
                                 else:
-                                    print("    | \x1b[94m%s\x1b[0m: \x1b[95m%s\x1b[0m" % (_input["name"], rdweb_data[_input["name"]]))
-
+                                    print("    | \x1b[94m%s\x1b[0m: \x1b[95m%s\x1b[0m" % (
+                                    _input["name"], rdweb_data[_input["name"]]))
                 break
             else:
                 if options.verbose:
                     print("[debug] Got unexpected HTTP response %d" % r.status_code)
-        except (urllib3.exceptions.NewConnectionError, urllib3.exceptions.ConnectTimeoutError, urllib3.exceptions.ReadTimeoutError, requests.exceptions.ConnectionError) as e:
+        except (
+                urllib3.exceptions.NewConnectionError,
+                urllib3.exceptions.ConnectTimeoutError,
+                urllib3.exceptions.ReadTimeoutError,
+                requests.exceptions.ConnectionError
+        ) as e:
             if options.nocolors:
                 print("[error] %s" % e)
             else:
@@ -173,12 +256,11 @@ if __name__ == '__main__':
     options = parseArgs()
 
     targets = []
-
     # Loading targets from a single --target option
-    if len(options.target) != 0:
+    if len(options.target_urls) != 0:
         if options.debug:
             print("[debug] Loading targets from --target options")
-        for target in options.target:
+        for target in options.target_urls:
             targets.append(target)
 
     # Loading targets line by line from a targets file
@@ -196,4 +278,3 @@ if __name__ == '__main__':
     # Scanning targets
     for url in targets:
         scan_target(url, options)
-
