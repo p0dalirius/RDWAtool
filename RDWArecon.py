@@ -28,7 +28,7 @@ def banner():
     """ % VERSION)
 
 
-def is_port_open(target, port, debug=True) -> bool:
+def is_port_open(target, port, debug=False) -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(10)
         # Non-existant domains cause a lot of errors, added error handling
@@ -40,11 +40,13 @@ def is_port_open(target, port, debug=True) -> bool:
             return False
 
 
-def is_http_accessible(target_url, verify=False) -> bool:
+def is_http_accessible(target_url, verify=False, debug=False) -> bool:
     try:
         r = requests.get(url=target_url, verify=verify)
         return True
-    except Exception as e:
+    except Exception as err:
+        if debug:
+            print("[debug] is_http_accessible('%s') ==> %s" % (target_url, err))
         return False
 
 
@@ -144,18 +146,20 @@ def scan_target(url, options):
         port = 80
 
     # Check if target port is open
-    if not is_port_open(target=target_data.netloc, port=port):
-        if options.nocolors:
-            print("[error] TCP port is closed on %s://%s." % (target_data.scheme, target_data.netloc))
-        else:
-            print("[\x1b[91merror\x1b[0m] \x1b[91mTCP port is closed on %s://%s.\x1b[0m" % (target_data.scheme, target_data.netloc))
+    if not is_port_open(target=target_data.netloc, port=port, debug=options.verbose):
+        if options.verbose:
+            if options.nocolors:
+                print("[error] TCP port is closed on %s://%s." % (target_data.scheme, target_data.netloc))
+            else:
+                print("[\x1b[91merror\x1b[0m] \x1b[91mTCP port is closed on %s://%s.\x1b[0m" % (target_data.scheme, target_data.netloc))
         return None
     # Check if target HTTP protocol is responding
-    if not is_http_accessible(target_url=url, verify=options.verify):
-        if options.nocolors:
-            print("[error] No HTTP protocol on %s://%s." % (target_data.scheme, target_data.netloc))
-        else:
-            print("[\x1b[91merror\x1b[0m] \x1b[91mNo HTTP protocol on %s://%s.\x1b[0m" % (target_data.scheme, target_data.netloc))
+    if not is_http_accessible(target_url=url, verify=options.verify, debug=options.verbose):
+        if options.verbose:
+            if options.nocolors:
+                print("[error] No HTTP protocol on %s://%s." % (target_data.scheme, target_data.netloc))
+            else:
+                print("[\x1b[91merror\x1b[0m] \x1b[91mNo HTTP protocol on %s://%s.\x1b[0m" % (target_data.scheme, target_data.netloc))
         return None
 
     # Disable SSL/TLS verification
