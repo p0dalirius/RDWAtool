@@ -14,7 +14,7 @@ with open('requirements.txt', 'r', encoding='utf-8') as f:
 
 setuptools.setup(
     name="rdwatool",
-    version="3.6",
+    version="2.0",
     description="",
     url="https://github.com/p0dalirius/RDWAtool",
     author="Podalirius",
