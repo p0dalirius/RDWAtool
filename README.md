@@ -62,7 +62,7 @@ There is many pre-filled information on the `login.aspx` page of the Remote Desk
 </form>
 ```
 
-The [RDWArecon.py](./RDWArecon.py) tool automatically parses this form and extract all the information.
+The [RDWArecon.py](rdwatool/RDWArecon.py) tool automatically parses this form and extract all the information.
 
 ### OS version banner image
 
@@ -70,15 +70,15 @@ If the remote RDWeb installation was not hardened, there is a high chance that t
 
 | Windows OS                 | SHA256 hash                                                        | Banner                                                            |
 |----------------------------|--------------------------------------------------------------------|-------------------------------------------------------------------|
-| **Windows Server 2008 R2** | `5a8a77dc7ffd463647987c0de6df2c870f42819ec03bbd02a3ea9601e2ed8a4b` | ![](./version_images/Windows%20Server%202008%20R2.png)            | 
-| **Windows Server 2012 R2** | `4560591682d433c7fa190c6bf40827110e219929932dc6dc049697529c8a98bc` | ![](./version_images/Windows%20Server%202012%20R2_white.png)      | 
-| **Windows Server 2012 R2** | `3d9b56811a5126a6d3b78a692c2278d588d495ee215173f752ce4cbf8102921c` | ![](./version_images/Windows%20Server%202012%20R2_black.png)      | 
-| **Windows Server 2016**    | `fb1505aadeab42d82100c4d23d421f421c858feae98332c55a4b9595f4cea541` | ![](./version_images/Windows%20Server%202016_black_bg_white.png)  | 
-| **Windows Server 2016**    | `3dbbeff5a0def7e0ba8ea383e5059eaa6acc37f7f8857218d44274fc029cfc4b` | ![](./version_images/Windows%20Server%202016_black.png)           | 
-| **Windows Server 2019**    | `2da4eb15fda2b7c80a94b9b2c5a3e104e2a9a2d9e9b3a222f5526c748fadf792` | ![](./version_images/Windows%20Server%202019_black.png)           | 
-| **Windows Server 2022**    | `256a6445e032875e611457374f08acb0565796c950eb9c254495d559600c0367` | ![](./version_images/Windows%20Server%202022_black.png)           | 
+| **Windows Server 2008 R2** | `5a8a77dc7ffd463647987c0de6df2c870f42819ec03bbd02a3ea9601e2ed8a4b` | ![](version_images/Windows%20Server%202008%20R2.png)            | 
+| **Windows Server 2012 R2** | `4560591682d433c7fa190c6bf40827110e219929932dc6dc049697529c8a98bc` | ![](version_images/Windows%20Server%202012%20R2_white.png)      | 
+| **Windows Server 2012 R2** | `3d9b56811a5126a6d3b78a692c2278d588d495ee215173f752ce4cbf8102921c` | ![](version_images/Windows%20Server%202012%20R2_black.png)      | 
+| **Windows Server 2016**    | `fb1505aadeab42d82100c4d23d421f421c858feae98332c55a4b9595f4cea541` | ![](version_images/Windows%20Server%202016_black_bg_white.png)  | 
+| **Windows Server 2016**    | `3dbbeff5a0def7e0ba8ea383e5059eaa6acc37f7f8857218d44274fc029cfc4b` | ![](version_images/Windows%20Server%202016_black.png)           | 
+| **Windows Server 2019**    | `2da4eb15fda2b7c80a94b9b2c5a3e104e2a9a2d9e9b3a222f5526c748fadf792` | ![](version_images/Windows%20Server%202019_black.png)           | 
+| **Windows Server 2022**    | `256a6445e032875e611457374f08acb0565796c950eb9c254495d559600c0367` | ![](version_images/Windows%20Server%202022_black.png)           | 
 
-The [RDWArecon.py](./RDWArecon.py) tool automatically gets this file and compare its hash to get the remote Windows Server version.
+The [RDWArecon.py](rdwatool/RDWArecon.py) tool automatically gets this file and compare its hash to get the remote Windows Server version.
 
 ## Demonstration
 
