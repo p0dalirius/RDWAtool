@@ -21,8 +21,8 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email="podalirius@protonmail.com",
-    packages=["rdwatool"],
-    package_data={'rdwatool': ['rdwatool/']},
+    packages=["rdwatool", "rdwatool.modes", "rdwatool.modes.recon", "rdwatool.modes.brute", "rdwatool.modes.spray"],
+    package_data={'rdwatool': ['rdwatool/', 'rdwatool/modes/']},
     include_package_data=True,
     license="GPL2",
     classifiers=[
