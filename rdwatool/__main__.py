@@ -7,13 +7,8 @@
 
 import argparse
 import os
-import socket
 import sys
-import urllib.parse
-import requests
-import urllib3
-from bs4 import BeautifulSoup
-import hashlib
+from rdwatool.scan import scan_target_worker
 
 
 VERSION = "2.0"
@@ -35,7 +30,7 @@ def parseArgs():
     mode_recon = argparse.ArgumentParser(add_help=False)
     group_targets_source = mode_recon.add_argument_group("Targets")
     group_targets_source.add_argument("-tf", "--targets-file", dest="targets_file", default=None, type=str, help="Path to file containing a line by line list of targets.")
-    group_targets_source.add_argument("-tu", "--target-url", dest="target_urls", default=[], type=str, action='append', help="Target URL to the tomcat manager.")
+    group_targets_source.add_argument("-tu", "--target-url", dest="target_urls", default=[], type=str, action="append", help="Target URL of the RDWA login page.")
     mode_recon.add_argument("-v", "--verbose", default=False, action="store_true", help="Verbose mode. (default: False)")
     mode_recon.add_argument("-k", "--insecure", dest="verify", action="store_false", default=True, required=False, help="Allow insecure server connections when using SSL (default: False)")
     mode_recon.add_argument("-L", "--location", dest="redirect", action="store_true", default=False, required=False, help="Follow redirects (default: False)")
@@ -43,9 +38,7 @@ def parseArgs():
     mode_recon.add_argument("--debug", default=False, action="store_true", help="Debug mode, for huge verbosity. (default: False)")
 
     mode_spray = argparse.ArgumentParser(add_help=False)
-    group_targets_source = mode_spray.add_argument_group("Targets")
-    group_targets_source.add_argument("-tf", "--targets-file", dest="targets_file", default=None, type=str, help="Path to file containing a line by line list of targets.")
-    group_targets_source.add_argument("-tu", "--target-url", dest="target_urls", default=[], type=str, action='append', help="Target URL to the tomcat manager.")
+    mode_spray.add_argument("-tu", "--target-url", dest="target_urls", default=None, type=str, help="Target URL of the RDWA login page.")
     mode_spray.add_argument("-v", "--verbose", default=False, action="store_true", help="Verbose mode. (default: False)")
     mode_spray.add_argument("-k", "--insecure", dest="verify", action="store_false", default=True, required=False, help="Allow insecure server connections when using SSL (default: False)")
     mode_spray.add_argument("-L", "--location", dest="redirect", action="store_true", default=False, required=False, help="Follow redirects (default: False)")
@@ -53,9 +46,7 @@ def parseArgs():
     mode_spray.add_argument("--debug", default=False, action="store_true", help="Debug mode, for huge verbosity. (default: False)")
 
     mode_brute = argparse.ArgumentParser(add_help=False)
-    group_targets_source = mode_brute.add_argument_group("Targets")
-    group_targets_source.add_argument("-tf", "--targets-file", dest="targets_file", default=None, type=str, help="Path to file containing a line by line list of targets.")
-    group_targets_source.add_argument("-tu", "--target-url", dest="target_urls", default=[], type=str, action='append', help="Target URL to the tomcat manager.")
+    mode_brute.add_argument("-tu", "--target-url", dest="target_urls", default=None, type=str, help="Target URL of the RDWA login page.")
     mode_brute.add_argument("-v", "--verbose", default=False, action="store_true", help="Verbose mode. (default: False)")
     mode_brute.add_argument("-k", "--insecure", dest="verify", action="store_false", default=True, required=False, help="Allow insecure server connections when using SSL (default: False)")
     mode_brute.add_argument("-L", "--location", dest="redirect", action="store_true", default=False, required=False, help="Follow redirects (default: False)")
@@ -81,30 +72,36 @@ def main():
     banner()
     options = parseArgs()
 
-    targets = []
-    # Loading targets from a single --target option
-    if len(options.target_urls) != 0:
-        if options.debug:
-            print("[debug] Loading targets from --target options")
-        for target in options.target_urls:
-            targets.append(target)
-
-    # Loading targets line by line from a targets file
-    if options.targets_file is not None:
-        if os.path.exists(options.targets_file):
+    if options.mode == "recon":
+        targets = []
+        # Loading targets from a single --target option
+        if len(options.target_urls) != 0:
             if options.debug:
-                print("[debug] Loading targets line by line from targets file '%s'" % options.targets_file)
-            f = open(options.targets_file, "r")
-            for line in f.readlines():
-                targets.append(line.strip())
-            f.close()
-        else:
-            print("[!] Could not open targets file '%s'" % options.targets_file)
+                print("[debug] Loading targets from --target options")
+            for target in options.target_urls:
+                targets.append(target)
 
-    # Scanning targets
-    for url in targets:
-        scan_target(url, options)
+        # Loading targets line by line from a targets file
+        if options.targets_file is not None:
+            if os.path.exists(options.targets_file):
+                if options.debug:
+                    print("[debug] Loading targets line by line from targets file '%s'" % options.targets_file)
+                f = open(options.targets_file, "r")
+                for line in f.readlines():
+                    targets.append(line.strip())
+                f.close()
+            else:
+                print("[!] Could not open targets file '%s'" % options.targets_file)
 
+        # Scanning targets
+        for url in targets:
+            print(scan_target_worker(url, options))
+
+    elif options.mode == "spray":
+        pass
+
+    elif options.mode == "brute":
+        pass
 
 if __name__ == '__main__':
     main()

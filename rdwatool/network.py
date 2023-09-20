@@ -5,6 +5,10 @@
 # Date created       : 20 Sep 2023
 
 
+import requests
+import socket
+
+
 def is_port_open(target, port, debug=False) -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(10)
