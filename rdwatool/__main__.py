@@ -32,7 +32,6 @@ def parseArgs():
     parser = argparse.ArgumentParser(description="Extract information about the server and the domain from external RDWeb pages.")
     parser.add_argument("--debug", default=False, action="store_true", help="Debug mode, for huge verbosity. (default: False)")
 
-
     mode_recon = argparse.ArgumentParser(add_help=False)
     group_targets_source = mode_recon.add_argument_group("Targets")
     group_targets_source.add_argument("-tf", "--targets-file", dest="targets_file", default=None, type=str, help="Path to file containing a line by line list of targets.")
