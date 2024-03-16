@@ -11,6 +11,8 @@ def generate_spray_parser_options():
     parser = argparse.ArgumentParser(add_help=False)
 
     parser.add_argument("-tu", "--target-url", dest="target_urls", default=None, type=str, help="Target URL of the RDWA login page.")
+    parser.add_argument("-tu", "--target-url", dest="target_urls", default=None, type=str, help="Target URL of the RDWA login page.")
+    parser.add_argument("-tu", "--target-url", dest="target_urls", default=None, type=str, help="Target URL of the RDWA login page.")
     parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Verbose mode. (default: False)")
     parser.add_argument("--no-colors", default=False, action="store_true", help="Disable colored output. (default: False)")
     parser.add_argument("--debug", default=False, action="store_true", help="Debug mode, for huge verbosity. (default: False)")

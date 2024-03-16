@@ -18,8 +18,8 @@ def generate_recon_parser_options():
     parser.add_argument("--no-colors", default=False, action="store_true", help="Disable colored output. (default: False)")
     parser.add_argument("--debug", default=False, action="store_true", help="Debug mode, for huge verbosity. (default: False)")
     parser.add_argument("-T", "--threads", default=250, type=int, help="Number of threads (default: 250)")
-    group_configuration = parser.add_argument_group("Advanced configuration")
 
+    group_configuration = parser.add_argument_group("Advanced configuration")
     group_configuration.add_argument("-PI", "--proxy-ip", default=None, type=str, help="Proxy IP.")
     group_configuration.add_argument("-PP", "--proxy-port", default=None, type=int, help="Proxy port")
     group_configuration.add_argument("-rt", "--request-timeout", default=5, type=int, help="Set the timeout of HTTP requests.")
