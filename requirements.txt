@@ -1,4 +1,4 @@
 requests
-bs4
+beautifulsoup4
 xlsxwriter
 urllib3<2
