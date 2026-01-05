@@ -10,6 +10,7 @@ from rdwatool.modes.spray.main import mode_spray
 from rdwatool.modes.brute.main import mode_brute
 from rdwatool.Config import Config
 import requests
+import sys
 
 
 VERSION = "2.0"
@@ -88,10 +89,20 @@ def parseArgs():
     mode_brute_parser = subparsers.add_parser("brute", parents=[mode_brute], help="Bruteforces passwords on one or more users through the RDWA login page.")
     args = parser.parse_args()
 
-    if (args.targets_file is None) and (len(args.target_urls) == 0):
-        parser.print_help()
-        print("\n[!] No targets specified.")
-        sys.exit(0)
+    # Validate target inputs per selected mode to avoid missing attributes
+    if args.mode == "recon":
+        targets_file = getattr(args, "targets_file", None)
+        target_urls = getattr(args, "target_urls", []) or []
+        if (targets_file is None) and (len(target_urls) == 0):
+            parser.print_help()
+            print("\n[!] No targets specified.")
+            sys.exit(1)
+    elif args.mode in ("spray", "brute"):
+        target_url = getattr(args, "target_urls", None)
+        if not target_url:
+            parser.print_help()
+            print("\n[!] No target URL specified.")
+            sys.exit(1)
 
     return args
 
